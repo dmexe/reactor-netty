@@ -66,10 +66,11 @@ final class PooledClientContextHandler<CHANNEL extends Channel>
 			ClientOptions options,
 			MonoSink<NettyContext> sink,
 			LoggingHandler loggingHandler,
+			ChannelStatsHandler channelStatsHandler,
 			boolean secure,
 			SocketAddress providedAddress,
 			ChannelPool pool) {
-		super(channelOpFactory, options, sink, loggingHandler, providedAddress);
+		super(channelOpFactory, options, sink, loggingHandler, channelStatsHandler, providedAddress);
 		this.clientOptions = options;
 		this.secure = secure;
 		this.pool = pool;

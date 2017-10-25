@@ -36,6 +36,8 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.util.AttributeKey;
 import reactor.ipc.netty.NettyContext;
 import reactor.ipc.netty.resources.LoopResources;
+import reactor.ipc.netty.stats.ChannelStatsListener;
+import reactor.ipc.netty.stats.ChannelStatsListenerFactory;
 import reactor.util.function.Tuple2;
 
 /**
@@ -69,6 +71,7 @@ public abstract class NettyOptions<BOOTSTRAP extends AbstractBootstrap<BOOTSTRAP
 	protected final Consumer<? super Channel>      afterChannelInit;
 	protected final Consumer<? super NettyContext> afterNettyContextInit;
 	private final Predicate<? super Channel>       onChannelInit;
+	private final ChannelStatsListenerFactory      channelStatsFactory;
 
 	protected NettyOptions(NettyOptions.Builder<BOOTSTRAP, SO, ?> builder) {
 		this.bootstrapTemplate = builder.bootstrapTemplate;
@@ -80,6 +83,7 @@ public abstract class NettyOptions<BOOTSTRAP extends AbstractBootstrap<BOOTSTRAP
 		this.sslCloseNotifyReadTimeoutMillis = builder.sslCloseNotifyReadTimeoutMillis;
 		this.afterNettyContextInit = builder.afterNettyContextInit;
 		this.onChannelInit = builder.onChannelInit;
+		this.channelStatsFactory = builder.channelStatsListenerFactory;
 
 		Consumer<? super Channel> afterChannel = builder.afterChannelInit;
 		if (afterChannel != null && builder.channelGroup != null) {
@@ -96,6 +100,10 @@ public abstract class NettyOptions<BOOTSTRAP extends AbstractBootstrap<BOOTSTRAP
 			this.afterChannelInit = null;
 		}
 	}
+
+	public final ChannelStatsListenerFactory channelStatsListenerFactory() {
+	  return channelStatsFactory;
+  }
 
 	/**
 	 * Returns the callback for post {@link Channel} initialization and reactor-netty
@@ -296,9 +304,11 @@ public abstract class NettyOptions<BOOTSTRAP extends AbstractBootstrap<BOOTSTRAP
 		private Consumer<? super Channel>      afterChannelInit                 = null;
 		private Consumer<? super NettyContext> afterNettyContextInit            = null;
 		private Predicate<? super Channel>     onChannelInit                    = null;
+		private ChannelStatsListenerFactory    channelStatsListenerFactory      = null;
 
 		protected Builder(BOOTSTRAP bootstrapTemplate) {
 			this.bootstrapTemplate = bootstrapTemplate;
+			this.channelStatsListenerFactory = ChannelStatsListenerFactory.getDefaultFactory();
 			defaultNettyOptions(this.bootstrapTemplate);
 		}
 
@@ -530,6 +540,11 @@ public abstract class NettyOptions<BOOTSTRAP extends AbstractBootstrap<BOOTSTRAP
 			return get();
 		}
 
+		public final BUILDER channelStatsListenerFactory(ChannelStatsListenerFactory factory) {
+			this.channelStatsListenerFactory = factory;
+			return get();
+		}
+
 		/**
 		 * Fill the builder with attribute values from the provided options.
 		 *
@@ -547,6 +562,7 @@ public abstract class NettyOptions<BOOTSTRAP extends AbstractBootstrap<BOOTSTRAP
 			this.afterChannelInit = options.afterChannelInit();
 			this.onChannelInit = options.onChannelInit();
 			this.afterNettyContextInit = options.afterNettyContextInit();
+			this.channelStatsListenerFactory = options.channelStatsListenerFactory();
 			return get();
 		}
 	}

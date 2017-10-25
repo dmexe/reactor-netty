@@ -37,10 +37,12 @@ import reactor.ipc.netty.NettyContext;
 import reactor.ipc.netty.NettyInbound;
 import reactor.ipc.netty.NettyOutbound;
 import reactor.ipc.netty.channel.ChannelOperations;
+import reactor.ipc.netty.channel.ChannelStatsHandler;
 import reactor.ipc.netty.channel.ContextHandler;
 import reactor.ipc.netty.options.ClientOptions;
 import reactor.ipc.netty.options.NettyOptions;
 import reactor.ipc.netty.resources.PoolResources;
+import reactor.ipc.netty.stats.ChannelStatsListener;
 
 /**
  * A TCP client connector.
@@ -115,6 +117,7 @@ public class TcpClient implements NettyConnector<NettyInbound, NettyOutbound> {
 	}
 
 	final ClientOptions options;
+	public final ChannelStatsHandler channelStatsHandler;
 
 	protected TcpClient(TcpClient.Builder builder) {
 		ClientOptions.Builder<?> clientOptionsBuilder = ClientOptions.builder();
@@ -127,12 +130,32 @@ public class TcpClient implements NettyConnector<NettyInbound, NettyOutbound> {
 		if (!clientOptionsBuilder.isPoolAvailable() && !clientOptionsBuilder.isPoolDisabled()) {
 			clientOptionsBuilder.poolResources(TcpResources.get());
 		}
+
 		this.options = clientOptionsBuilder.build();
+		this.channelStatsHandler = createChannelStatsHandler(this.options);
 	}
 
 	protected TcpClient(ClientOptions options) {
 		this.options = Objects.requireNonNull(options, "options");
+		this.channelStatsHandler = createChannelStatsHandler(options);
 	}
+
+	private static ChannelStatsHandler createChannelStatsHandler(ClientOptions options) {
+    if (options.channelStatsListenerFactory() != null) {
+      String endpointAddress = "tcp://";
+      final SocketAddress socketAddress = options.getAddress();
+      if (socketAddress != null && socketAddress instanceof InetSocketAddress) {
+        final InetSocketAddress inetAddress = (InetSocketAddress) socketAddress;
+        if (inetAddress.getHostString() != null) {
+          endpointAddress = endpointAddress + inetAddress.getHostString();
+        }
+        endpointAddress = endpointAddress + ":" + inetAddress.getPort();
+        final ChannelStatsListener listener = options.channelStatsListenerFactory().newListener(endpointAddress);
+        return new ChannelStatsHandler(listener);
+      }
+    }
+    return null;
+  }
 
 	@Override
 	public final Mono<? extends NettyContext> newHandler(BiFunction<? super NettyInbound, ? super NettyOutbound, ? extends Publisher<Void>> handler) {
@@ -219,6 +242,7 @@ public class TcpClient implements NettyConnector<NettyInbound, NettyOutbound> {
 		return ContextHandler.newClientContext(sink,
 				options,
 				loggingHandler,
+				channelStatsHandler,
 				secure,
 				providedAddress,
 				pool,

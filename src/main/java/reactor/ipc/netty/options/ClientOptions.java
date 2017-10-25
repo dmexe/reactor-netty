@@ -39,6 +39,8 @@ import io.netty.util.NetUtil;
 import reactor.core.Exceptions;
 import reactor.ipc.netty.resources.LoopResources;
 import reactor.ipc.netty.resources.PoolResources;
+import reactor.ipc.netty.stats.ChannelStatsListener;
+import reactor.ipc.netty.stats.ChannelStatsListenerFactory;
 
 /**
  * A client connector builder with low-level connection options including connection pooling and
@@ -108,6 +110,7 @@ public class ClientOptions extends NettyOptions<Bootstrap, ClientOptions> {
 		else {
 			this.connectAddress = builder.connectAddress;
 		}
+
 		this.poolResources = builder.poolResources;
 		this.protocolFamily = builder.protocolFamily;
 	}

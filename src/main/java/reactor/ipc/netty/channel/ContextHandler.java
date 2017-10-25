@@ -39,6 +39,7 @@ import reactor.ipc.netty.NettyPipeline;
 import reactor.ipc.netty.options.ClientOptions;
 import reactor.ipc.netty.options.NettyOptions;
 import reactor.ipc.netty.options.ServerOptions;
+import reactor.ipc.netty.stats.ChannelStatsListener;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 import reactor.util.function.Tuple2;
@@ -70,12 +71,14 @@ public abstract class ContextHandler<CHANNEL extends Channel>
 			MonoSink<NettyContext> sink,
 			ClientOptions options,
 			LoggingHandler loggingHandler,
+			ChannelStatsHandler channelStatsHandler, /* may be null */
 			boolean secure,
 			SocketAddress providedAddress,
 			ChannelOperations.OnNew<CHANNEL> channelOpFactory) {
 		return newClientContext(sink,
 				options,
 				loggingHandler,
+				channelStatsHandler,
 				secure,
 				providedAddress,
 				null,
@@ -100,6 +103,7 @@ public abstract class ContextHandler<CHANNEL extends Channel>
 			MonoSink<NettyContext> sink,
 			ClientOptions options,
 			LoggingHandler loggingHandler,
+			ChannelStatsHandler channelStatsHandler, /* may be null */
 			boolean secure,
 			SocketAddress providedAddress,
 			ChannelPool pool, ChannelOperations.OnNew<CHANNEL> channelOpFactory) {
@@ -108,6 +112,7 @@ public abstract class ContextHandler<CHANNEL extends Channel>
 					options,
 					sink,
 					loggingHandler,
+					channelStatsHandler,
 					secure,
 					providedAddress,
 					pool);
@@ -116,6 +121,7 @@ public abstract class ContextHandler<CHANNEL extends Channel>
 				options,
 				sink,
 				loggingHandler,
+				channelStatsHandler,
 				secure,
 				providedAddress);
 	}
@@ -142,6 +148,7 @@ public abstract class ContextHandler<CHANNEL extends Channel>
 	final LoggingHandler                   loggingHandler;
 	final SocketAddress                    providedAddress;
 	final ChannelOperations.OnNew<CHANNEL> channelOpFactory;
+	final ChannelStatsHandler              channelStatsHandler;
 
 	BiConsumer<ChannelPipeline, ContextHandler<Channel>> pipelineConfigurator;
 	boolean                                              fired;
@@ -160,12 +167,14 @@ public abstract class ContextHandler<CHANNEL extends Channel>
 			NettyOptions<?, ?> options,
 			MonoSink<NettyContext> sink,
 			LoggingHandler loggingHandler,
+			ChannelStatsHandler channelStatsHandler,
 			SocketAddress providedAddress) {
 		this.channelOpFactory =
 				Objects.requireNonNull(channelOpFactory, "channelOpFactory");
 		this.options = options;
 		this.sink = sink;
 		this.loggingHandler = loggingHandler;
+		this.channelStatsHandler = channelStatsHandler;
 		this.autoCreateOperations = true;
 		this.providedAddress = providedAddress;
 
@@ -387,6 +396,7 @@ public abstract class ContextHandler<CHANNEL extends Channel>
 	static void addSslAndLogHandlers(NettyOptions<?, ?> options,
 			ContextHandler<?> sink,
 			LoggingHandler loggingHandler,
+			ChannelStatsHandler channelStatsHandler,
 			boolean secure,
 			Tuple2<String, Integer> sniInfo,
 			ChannelPipeline pipeline) {
@@ -431,9 +441,16 @@ public abstract class ContextHandler<CHANNEL extends Channel>
 						NettyPipeline.SslReader,
 						new SslReadHandler(sink));
 			}
+
 		}
 		else if (log.isDebugEnabled()) {
 			pipeline.addFirst(NettyPipeline.LoggingHandler, loggingHandler);
-		}
+    }
+    if (channelStatsHandler != null) {
+      pipeline.addAfter(
+      		NettyPipeline.LoggingHandler,
+      		NettyPipeline.StatsHandler,
+					channelStatsHandler);
+    }
 	}
 }

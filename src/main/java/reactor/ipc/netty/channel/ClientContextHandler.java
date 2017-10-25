@@ -46,9 +46,10 @@ final class ClientContextHandler<CHANNEL extends Channel>
 			ClientOptions options,
 			MonoSink<NettyContext> sink,
 			LoggingHandler loggingHandler,
+			ChannelStatsHandler channelStatsHandler,
 			boolean secure,
 			SocketAddress providedAddress) {
-		super(channelOpFactory, options, sink, loggingHandler, providedAddress);
+		super(channelOpFactory, options, sink, loggingHandler, channelStatsHandler, providedAddress);
 		this.clientOptions = options;
 		this.secure = secure;
 	}
@@ -86,7 +87,15 @@ final class ClientContextHandler<CHANNEL extends Channel>
 
 	@Override
 	protected void doPipeline(Channel ch) {
-		addSslAndLogHandlers(clientOptions, this, loggingHandler, secure, getSNI(), ch.pipeline());
+		addSslAndLogHandlers(
+				clientOptions,
+				this,
+				loggingHandler,
+				channelStatsHandler,
+				secure,
+				getSNI(),
+				ch.pipeline()
+		);
 		addProxyHandler(clientOptions, ch.pipeline(), providedAddress);
 	}
 

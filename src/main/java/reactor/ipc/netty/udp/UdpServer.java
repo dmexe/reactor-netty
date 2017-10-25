@@ -164,6 +164,7 @@ final public class UdpServer implements NettyConnector<UdpInbound, UdpOutbound> 
 		return ContextHandler.newClientContext(sink,
 				options,
 				loggingHandler,
+				null,
 				false,
 				providedAddress,
 				(ch, c, msg) -> UdpOperations.bind(ch, handler, c));

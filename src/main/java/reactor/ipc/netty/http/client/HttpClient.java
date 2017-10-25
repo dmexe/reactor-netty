@@ -51,6 +51,8 @@ import reactor.ipc.netty.http.server.HttpServerResponse;
 import reactor.ipc.netty.http.websocket.WebsocketInbound;
 import reactor.ipc.netty.http.websocket.WebsocketOutbound;
 import reactor.ipc.netty.options.ClientOptions;
+import reactor.ipc.netty.stats.ChannelStatsListener;
+import reactor.ipc.netty.stats.ChannelStatsListenerFactory;
 import reactor.ipc.netty.tcp.TcpClient;
 
 /**
@@ -392,9 +394,11 @@ public class HttpClient implements NettyConnector<HttpClientResponse, HttpClient
 				SocketAddress providedAddress,
 				ChannelPool pool,
 				Consumer<? super Channel> onSetup) {
+
 			return ContextHandler.<SocketChannel>newClientContext(sink,
 					options,
 					loggingHandler,
+					channelStatsHandler,
 					secure,
 					providedAddress,
 					pool,
@@ -444,7 +448,6 @@ public class HttpClient implements NettyConnector<HttpClientResponse, HttpClient
 
 		private Builder() {
 		}
-
 
 		/**
 		 * The options for the client, including address and port.

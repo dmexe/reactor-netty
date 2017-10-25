@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
  */
 public class HttpClientOperationsTest {
 
-	ContextHandler<Channel> handler = new ContextHandler<Channel>((a, b, c) -> null, null, null, null, null) {
+	ContextHandler<Channel> handler = new ContextHandler<Channel>((a, b, c) -> null, null, null, null, null, null) {
 		@Override
 		public void fireContextActive(NettyContext context) {
 

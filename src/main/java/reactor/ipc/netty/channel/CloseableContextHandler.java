@@ -49,8 +49,9 @@ abstract class CloseableContextHandler<CHANNEL extends Channel>
 			NettyOptions<?, ?> options,
 			MonoSink<NettyContext> sink,
 			LoggingHandler loggingHandler,
+			ChannelStatsHandler channelStatsHandler,
 			SocketAddress providedAddress) {
-		super(channelOpFactory, options, sink, loggingHandler, providedAddress);
+		super(channelOpFactory, options, sink, loggingHandler, channelStatsHandler, providedAddress);
 	}
 
 	@Override
