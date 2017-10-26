@@ -17,13 +17,13 @@ import org.gradle.api.internal.plugins.osgi.OsgiHelper
 
 buildscript {
   repositories {
-	maven { url "http://repo.spring.io/plugins-release" }
+    maven { url "http://repo.spring.io/plugins-release" }
   }
   dependencies {
-	classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7',
-			'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE',
-			'com.github.jengelman.gradle.plugins:shadow:1.2.0',
-			'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.8'
+    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7',
+        'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE',
+        'com.github.jengelman.gradle.plugins:shadow:1.2.0',
+        'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.8'
   }
 }
 
@@ -36,13 +36,13 @@ description = 'Reactive Streams Netty driver'
 
 ext {
   if (project.hasProperty('versionBranch') && version.toString().endsWith(".BUILD-SNAPSHOT")) {
-	versionBranch = versionBranch.replaceAll("\"", "").trim()
-	if (!versionBranch.isEmpty()) {
-	  realVersion = version.toString().replace("BUILD-SNAPSHOT", versionBranch + ".BUILD-SNAPSHOT")
-	  project.version = realVersion
-	  println "Building special snapshot ${project.version}"
-	  println "OSGI version would be: ${new OsgiHelper().getVersion(project.version.toString())}"
-	}
+    versionBranch = versionBranch.replaceAll("\"", "").trim()
+    if (!versionBranch.isEmpty()) {
+      realVersion = version.toString().replace("BUILD-SNAPSHOT", versionBranch + ".BUILD-SNAPSHOT")
+      project.version = realVersion
+      println "Building special snapshot ${project.version}"
+      println "OSGI version would be: ${new OsgiHelper().getVersion(project.version.toString())}"
+    }
   }
 
   gradleVersion = '3.3'
@@ -67,12 +67,12 @@ ext {
   mockitoVersion = '1.10.19'
 
   javadocLinks = ["http://docs.oracle.com/javase/7/docs/api/",
-				  "http://docs.oracle.com/javaee/6/api/",
-				  "http://fasterxml.github.io/jackson-databind/javadoc/2.5/",
-				  "http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/",
-				  "http://projectreactor.io/docs/core/release/api/",
-				  "http://netty.io/4.1/api/",
-				  "http://projectreactor.io/docs/netty/release/api/",] as String[]
+                  "http://docs.oracle.com/javaee/6/api/",
+                  "http://fasterxml.github.io/jackson-databind/javadoc/2.5/",
+                  "http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/",
+                  "http://projectreactor.io/docs/core/release/api/",
+                  "http://netty.io/4.1/api/",
+                  "http://projectreactor.io/docs/netty/release/api/",] as String[]
 }
 
 
@@ -87,173 +87,179 @@ configure(rootProject) { project ->
   apply from: "${gradleScriptDir}/ide.gradle"
 
   jacoco {
-	toolVersion = '0.7.7.201606060606'
+    toolVersion = '0.7.7.201606060606'
   }
 
   jacocoTestReport {
-	reports {
-	  xml.enabled = true
-	  html.enabled = true
-	}
+    reports {
+      xml.enabled = true
+      html.enabled = true
+    }
   }
 
   ext.bundleImportPackages = ['com.fasterxml.jackson.core;resolution:=optional',
-							  'com.fasterxml.jackson.databind;resolution:=optional',
-							  'com.fasterxml.jackson.module;resolution:=optional',
-							  '*']
+                              'com.fasterxml.jackson.databind;resolution:=optional',
+                              'com.fasterxml.jackson.module;resolution:=optional',
+                              '*']
 
   [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:varargs",
-														   "-Xlint:cast",
-														   "-Xlint:classfile",
-														   "-Xlint:dep-ann",
-														   "-Xlint:divzero",
-														   "-Xlint:empty",
-														   "-Xlint:finally",
-														   "-Xlint:overrides",
-														   "-Xlint:path",
-														   "-Xlint:processing",
-														   "-Xlint:static",
-														   "-Xlint:try",
-														   "-Xlint:deprecation",
-														   "-Xlint:unchecked",
-														   "-Xlint:-serial",      // intentionally disabled
-														   "-Xlint:-options",     // intentionally disabled
-														   "-Xlint:-fallthrough", // intentionally disabled
-														   "-Xlint:-rawtypes"     // TODO enable and fix warnings
+                                                           "-Xlint:cast",
+                                                           "-Xlint:classfile",
+                                                           "-Xlint:dep-ann",
+                                                           "-Xlint:divzero",
+                                                           "-Xlint:empty",
+                                                           "-Xlint:finally",
+                                                           "-Xlint:overrides",
+                                                           "-Xlint:path",
+                                                           "-Xlint:processing",
+                                                           "-Xlint:static",
+                                                           "-Xlint:try",
+                                                           "-Xlint:deprecation",
+                                                           "-Xlint:unchecked",
+                                                           "-Xlint:-serial",      // intentionally disabled
+                                                           "-Xlint:-options",     // intentionally disabled
+                                                           "-Xlint:-fallthrough", // intentionally disabled
+                                                           "-Xlint:-rawtypes"     // TODO enable and fix warnings
   ]
 
   compileJava {
-	sourceCompatibility = 1.8
-	targetCompatibility = 1.8
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
   }
 
   compileTestJava {
-	sourceCompatibility = 1.8
-	targetCompatibility = 1.8
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
   }
 
   if (JavaVersion.current().isJava8Compatible()) {
-	compileTestJava.options.compilerArgs += "-parameters"
-	tasks.withType(Javadoc) {
-	  options.addStringOption('Xdoclint:none', '-quiet')
-	}
+    compileTestJava.options.compilerArgs += "-parameters"
+    tasks.withType(Javadoc) {
+      options.addStringOption('Xdoclint:none', '-quiet')
+    }
   }
 
   [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
   sourceSets.test.resources.srcDirs = ["src/test/resources", "src/test/java"]
 
   configurations.all {
-	exclude group: 'commons-logging', module: 'commons-logging'
+    exclude group: 'commons-logging', module: 'commons-logging'
   }
 
   project.tasks.withType(Test).all {
-	// run tests with IPv4 only when IPv6 is available
-	if (project.hasProperty('preferIPv4Stack')) {
-		systemProperty("java.net.preferIPv4Stack", "true")
-	}
-	// run tests with preferring IPv6 addresses
-	if (project.hasProperty('preferIPv6Addresses')) {
-		systemProperty("java.net.preferIPv6Addresses", "true")
-	}
-	systemProperty("java.awt.headless", "true")
-	systemProperty("reactor.trace.cancel", "true")
-	systemProperty("reactor.trace.nocapacity", "true")
-	systemProperty("testGroups", project.properties.get("testGroups"))
-	scanForTestClasses = false
-	include '**/*Tests.*'
-	include '**/*Test.*'
-	include '**/*Spec.*'
-	exclude '**/*Abstract*.*'
+    // run tests with IPv4 only when IPv6 is available
+    if (project.hasProperty('preferIPv4Stack')) {
+      systemProperty("java.net.preferIPv4Stack", "true")
+    }
+    // run tests with preferring IPv6 addresses
+    if (project.hasProperty('preferIPv6Addresses')) {
+      systemProperty("java.net.preferIPv6Addresses", "true")
+    }
+    if (project.hasProperty('disableAllocatorCache')) {
+      systemProperty("io.netty.allocator.useCacheForAllThreads", "false")
+      systemProperty("io.netty.allocator.tinyCacheSize", "0")
+      systemProperty("io.netty.allocator.smallCacheSize", "0")
+      systemProperty("io.netty.allocator.normalCacheSize", "0")
+    }
+    systemProperty("java.awt.headless", "true")
+    systemProperty("reactor.trace.cancel", "true")
+    systemProperty("reactor.trace.nocapacity", "true")
+    systemProperty("testGroups", project.properties.get("testGroups"))
+    scanForTestClasses = false
+    include '**/*Tests.*'
+    include '**/*Test.*'
+    include '**/*Spec.*'
+    exclude '**/*Abstract*.*'
   }
 
   test {
-	testLogging {
-	  events  "passed", "failed"
-	  showExceptions true
-	  exceptionFormat "full"
-	  maxGranularity 3
-	}
+    testLogging {
+      events "passed", "failed"
+      showExceptions true
+      exceptionFormat "full"
+      maxGranularity 3
+    }
 
-	onOutput { descriptor, event ->
-	  if (event.message.contains("ResourceLeakDetector")) {
-		logger.error("ERROR: Test: " + descriptor + " produced resource leak: " + event.message )
-	  }
-	}
+    onOutput { descriptor, event ->
+      if (event.message.contains("ResourceLeakDetector")) {
+        logger.error("ERROR: Test: " + descriptor + " produced resource leak: " + event.message)
+      }
+    }
   }
 
   repositories {
-	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
-	  if (System.getenv ()["bamboo_buildNumber"] == null) {
-		mavenLocal()
-	  } else {
-		println 'Bamboo CI detected, avoiding use of mavenLocal()'
-	  }
-	  maven { url 'http://repo.spring.io/libs-snapshot' }
-	}
-	maven { url 'http://repo.spring.io/libs-milestone' }
-	maven { url 'http://repo.spring.io/libs-release' }
-	maven { url "https://oss.sonatype.org/content/repositories/releases/" }
-	jcenter()
-	mavenCentral()
+    if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
+      if (System.getenv()["bamboo_buildNumber"] == null) {
+        mavenLocal()
+      } else {
+        println 'Bamboo CI detected, avoiding use of mavenLocal()'
+      }
+      maven { url 'http://repo.spring.io/libs-snapshot' }
+    }
+    maven { url 'http://repo.spring.io/libs-milestone' }
+    maven { url 'http://repo.spring.io/libs-release' }
+    maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+    jcenter()
+    mavenCentral()
   }
 
   // dependencies that are common across all java projects
   dependencies {
-	// JSR-305 annotations
-	optional "com.google.code.findbugs:jsr305:3.0.2"
+    // JSR-305 annotations
+    optional "com.google.code.findbugs:jsr305:3.0.2"
 
-	// Logging
-	optional "org.slf4j:slf4j-api:$slf4jVersion"
+    // Logging
+    optional "org.slf4j:slf4j-api:$slf4jVersion"
 
-	compile "io.projectreactor:reactor-core:$reactorCoreVersion"
+    compile "io.projectreactor:reactor-core:$reactorCoreVersion"
 
-	//Default reactor-netty impl
-	//compile "io.netty:netty-all:$nettyVersion"
+    //Default reactor-netty impl
+    //compile "io.netty:netty-all:$nettyVersion"
 
-	compile "io.netty:netty-handler:${nettyVersion}"
-	compile "io.netty:netty-handler-proxy:${nettyVersion}"
-	compile "io.netty:netty-codec-http:${nettyVersion}"
-	compile "io.netty:netty-transport-native-epoll:${nettyVersion}"
+    compile "io.netty:netty-handler:${nettyVersion}"
+    compile "io.netty:netty-handler-proxy:${nettyVersion}"
+    compile "io.netty:netty-codec-http:${nettyVersion}"
+    compile "io.netty:netty-transport-native-epoll:${nettyVersion}"
 
-	// Testing
-	testCompile "org.apache.httpcomponents:fluent-hc:4.3.6"
-	testCompile "com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion"
-	testCompile "io.projectreactor:reactor-test:$testAddonVersion"
+    // Testing
+    testCompile "org.apache.httpcomponents:fluent-hc:4.3.6"
+    testCompile "com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion"
+    testCompile "io.projectreactor:reactor-test:$testAddonVersion"
 
-	testRuntime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+    testRuntime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
-	testRuntime "ch.qos.logback:logback-classic:$logbackVersion"
-	// Testing
-	testCompile "org.hamcrest:hamcrest-library:1.3",
-			"org.assertj:assertj-core:$assertJVersion",
-			"org.testng:testng:6.8.5"
+    testRuntime "ch.qos.logback:logback-classic:$logbackVersion"
+    // Testing
+    testCompile "org.hamcrest:hamcrest-library:1.3",
+        "org.assertj:assertj-core:$assertJVersion",
+        "org.testng:testng:6.8.5"
   }
 
 
   if (project.hasProperty('platformVersion')) {
-	apply plugin: 'spring-io'
+    apply plugin: 'spring-io'
 
-	repositories {
-	  maven { url 'http://repo.spring.io/libs-snapshot' }
-	}
+    repositories {
+      maven { url 'http://repo.spring.io/libs-snapshot' }
+    }
 
-	dependencyManagement {
-	  springIoTestRuntime {
-		imports {
-		  mavenBom "io.spring.platform:platform-bom:$platformVersion"
-		}
-	  }
-	}
+    dependencyManagement {
+      springIoTestRuntime {
+        imports {
+          mavenBom "io.spring.platform:platform-bom:$platformVersion"
+        }
+      }
+    }
   }
 
 
   jar {
-	manifest {
-	  instruction 'Import-Package', bundleImportPackages.join(',')
-	  attributes("Created-By": "${System.getProperty("java.version")} (${System.getProperty("java.specification.vendor")})",
-			  "Implementation-Title": project.name,
-			  "Implementation-Version": project.version)
-	}
+    manifest {
+      instruction 'Import-Package', bundleImportPackages.join(',')
+      attributes("Created-By": "${System.getProperty("java.version")} (${System.getProperty("java.specification.vendor")})",
+          "Implementation-Title": project.name,
+          "Implementation-Version": project.version)
+    }
   }
 
   check.dependsOn jacocoTestReport
@@ -269,8 +275,8 @@ configurations.all {
     includes(["**/*.java", "**/*.css"])
     strictCheck true
     mapping {
-        java = 'SLASHSTAR_STYLE'
-        css = 'SLASHSTAR_STYLE'
+      java = 'SLASHSTAR_STYLE'
+      css = 'SLASHSTAR_STYLE'
     }
   }
 }

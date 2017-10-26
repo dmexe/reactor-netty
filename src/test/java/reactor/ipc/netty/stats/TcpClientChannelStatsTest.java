@@ -1,19 +1,25 @@
 package reactor.ipc.netty.stats;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import reactor.ipc.netty.NettyContext;
 import reactor.ipc.netty.SocketUtils;
+import reactor.ipc.netty.rules.PooledByteBufAllocatorLeaks;
 import reactor.ipc.netty.tcp.TcpClient;
 import reactor.ipc.netty.tcp.TcpServer;
 
 public class TcpClientChannelStatsTest {
   int serverPort;
+
+  @Rule
+  public final PooledByteBufAllocatorLeaks leaks = new PooledByteBufAllocatorLeaks();
 
   @Before
   public void setup() throws Exception {
@@ -30,6 +36,8 @@ public class TcpClientChannelStatsTest {
         .newHandler((req, rep) ->
             req.receive().aggregate().flatMap(payload -> rep.sendObject(payload).then()))
         .block(Duration.ofSeconds(5));
+
+    //PooledByteBufAllocator.DEFAULT.directBuffer();
 
     final NettyContext client = TcpClient.builder()
         .options(o -> o

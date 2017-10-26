@@ -41,6 +41,7 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.CharsetUtil;
 import org.junit.Assert;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import reactor.core.publisher.DirectProcessor;
 import reactor.core.publisher.Flux;
@@ -52,6 +53,7 @@ import reactor.ipc.netty.http.HttpResources;
 import reactor.ipc.netty.http.server.HttpServer;
 import reactor.ipc.netty.options.ClientProxyOptions.Proxy;
 import reactor.ipc.netty.resources.PoolResources;
+import reactor.ipc.netty.rules.PooledByteBufAllocatorLeaks;
 import reactor.ipc.netty.tcp.TcpServer;
 import reactor.test.StepVerifier;
 
@@ -62,6 +64,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since 0.6
  */
 public class HttpClientTest {
+
+	@Rule
+	public final PooledByteBufAllocatorLeaks leaks = new PooledByteBufAllocatorLeaks();
 
 	@Test
 	public void abort() throws Exception {
@@ -314,20 +319,27 @@ public class HttpClientTest {
 
 	@Test
 	public void simpleTest404_1() {
+		PoolResources pool = PoolResources.fixed("http", 1);
+
 		HttpClient client =
 				HttpClient.create(ops -> ops.host("google.com")
 				                            .port(80)
-				                            .poolResources(PoolResources.fixed("http", 1)));
+				                            .poolResources(pool));
+
 		doSimpleTest404(client);
 		doSimpleTest404(client);
+
+		pool.dispose();
 	}
 
 	private void doSimpleTest404(HttpClient client) {
 		int res = client.get("/unsupportedURI",
 				             c -> c.followRedirect()
 				                   .sendHeaders())
-				        .flatMap(r -> Mono.just(r.status()
-				                                 .code()))
+				        .flatMap(r -> {
+				        	r.dispose();
+				        	return Mono.just(r.status().code());
+								})
 				        .log()
 				        .onErrorResume(HttpClientException.class,
 				                       e -> Mono.just(e.status()
